@@ -27,6 +27,7 @@ Enter in your browser the following url: [http://localhost:5001/](http://localho
     - Users can Add a new item.
     - Edit its own items.
     - Delete its own items.
+5. Return the catalog: [http://localhost:5001/catalog/JSON](http://localhost:5001/catalog/JSON)
 
 
 ## General Comments
