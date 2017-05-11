@@ -4,6 +4,7 @@ import random
 import string
 import json
 from string import letters
+from functools import wraps
 from flask import Flask, render_template, request, redirect, jsonify, url_for,\
                   flash, session as login_session, make_response
 from werkzeug.utils import secure_filename
@@ -32,9 +33,19 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Catalog"
 
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 APP.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def login_required(f):
+    """ Decorated Function to verify Login """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        """ Decorated Function to verify Login """
+        if 'username' not in login_session:
+            return redirect(url_for('show_login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @APP.route('/')
 @APP.route('/catalog')
@@ -65,36 +76,33 @@ def show_catalog_by_category(category_id):
         return response
 
 @APP.route('/catalog/<int:category_id>/crud/<int:item_id>')
+@login_required
 def show_item_crud(category_id, item_id=None):
     """ Show Item CRUD """
-    if 'username' not in login_session:
-        return redirect(url_for('show_login'))
-    else:
-        categories = get_all_categories()
-        item = get_item_by_id(item_id)
-        return render_template("item_crud.html", pagename="Add New Item", method="new",\
-                                category_id=category_id, categories=categories, item=item)
+    categories = get_all_categories()
+    item = get_item_by_id(item_id)
+    return render_template("item_crud.html", pagename="Add New Item", method="new",\
+                            category_id=category_id, categories=categories, item=item)
 
 @APP.route('/catalog/item/cup', methods=['POST'])
+@login_required
 def post_item():
     """ Create or Update Item """
-    if 'username' not in login_session:
-        return redirect(url_for('show_login'))
-    else:
-        item_id = request.form['item_id']
-        if item_id:
-            item_name = request.form['item_name']
-            item_description = request.form['item_description']
-            category_id = request.form['category_id']
-            user_id = login_session['user_id']
-            filename = None
-            if 'item_picture' in request.files:
-                file_var = request.files['item_picture']
-                if file_var and allowed_file(file_var.filename):
-                    filename = secure_filename(file_var.filename)
-                    file_var.save(os.path.join(APP.config['UPLOAD_FOLDER'], filename))
-            if item_name and item_description and category_id and user_id and item_id:
-                item = get_item_by_id(item_id)
+    item_id = request.form['item_id']
+    if item_id:
+        item_name = request.form['item_name']
+        item_description = request.form['item_description']
+        category_id = request.form['category_id']
+        user_id = login_session['user_id']
+        filename = None
+        if 'item_picture' in request.files:
+            file_var = request.files['item_picture']
+            if file_var and allowed_file(file_var.filename):
+                filename = secure_filename(file_var.filename)
+                file_var.save(os.path.join(APP.config['UPLOAD_FOLDER'], filename))
+        if item_name and item_description and category_id and user_id and item_id:
+            item = get_item_by_id(item_id)
+            if item.user_id == user_id:
                 if filename:
                     item.item_name = item_name
                     item.item_description = item_description
@@ -108,47 +116,55 @@ def post_item():
                 if item_id:
                     return redirect(url_for('show_catalog_by_category', category_id=category_id))
             else:
-                flash('Some of the fields are empty')
-                return redirect(url_for('show_item_crud', category_id=category_id))
+                response = make_response(json.dumps("You are not allowed to update this item."), 403)
+                response.headers['Content-Type'] = 'application/json'
+                return response
         else:
-            item_name = request.form['item_name']
-            item_description = request.form['item_description']
-            category_id = request.form['category_id']
-            user_id = login_session['user_id']
-            filename = None
-            if 'item_picture' in request.files:
-                file_var = request.files['item_picture']
-                if file_var and allowed_file(file_var.filename):
-                    filename = secure_filename(file_var.filename)
-                    file_var.save(os.path.join(APP.config['UPLOAD_FOLDER'], filename))
-            if item_name and item_description and category_id and user_id:
-                if filename:
-                    item = Item(item_name=item_name, item_description=item_description,\
-                                item_picture=filename,\
-                                item_price=0.0, category_id=category_id, user_id=user_id)
-                else:
-                    item = Item(item_name=item_name, item_description=item_description,\
-                                item_price=0.0, category_id=category_id, user_id=user_id)
-                item_id = insert_item(item)
-                if item_id:
-                    return redirect(url_for('show_catalog_by_category', category_id=category_id))
+            flash('Some of the fields are empty')
+            return redirect(url_for('show_item_crud', category_id=category_id))
+    else:
+        item_name = request.form['item_name']
+        item_description = request.form['item_description']
+        category_id = request.form['category_id']
+        user_id = login_session['user_id']
+        filename = None
+        if 'item_picture' in request.files:
+            file_var = request.files['item_picture']
+            if file_var and allowed_file(file_var.filename):
+                filename = secure_filename(file_var.filename)
+                file_var.save(os.path.join(APP.config['UPLOAD_FOLDER'], filename))
+        if item_name and item_description and category_id and user_id:
+            if filename:
+                item = Item(item_name=item_name, item_description=item_description,\
+                            item_picture=filename,\
+                            item_price=0.0, category_id=category_id, user_id=user_id)
             else:
-                flash('Some of the fields are empty')
-                return redirect(url_for('show_item_crud', category_id=category_id))
+                item = Item(item_name=item_name, item_description=item_description,\
+                            item_price=0.0, category_id=category_id, user_id=user_id)
+            item_id = insert_item(item)
+            if item_id:
+                return redirect(url_for('show_catalog_by_category', category_id=category_id))
+        else:
+            flash('Some of the fields are empty')
+            return redirect(url_for('show_item_crud', category_id=category_id))
 
 @APP.route('/catalog/item/del', methods=['POST'])
+@login_required
 def del_item():
     """ Delete Item """
-    if 'username' not in login_session:
-        return redirect(url_for('show_login'))
-    else:
-        item_id = request.form['item_id']
-        if item_id:
-            item = get_item_by_id(item_id)
+    item_id = request.form['item_id']
+    user_id = login_session['user_id']
+    if item_id:
+        item = get_item_by_id(item_id)
+        if item.user_id == user_id:
             delete_item(item_id)
             return redirect(url_for('show_catalog_by_category', category_id=item.category_id))
         else:
-            return redirect(url_for('show_catalog'))
+            response = make_response(json.dumps("You are not allowed to delete this item."), 403)
+            response.headers['Content-Type'] = 'application/json'
+            return response
+    else:
+        return redirect(url_for('show_catalog'))
 
 @APP.route('/catalog/JSON')
 def catalog_json():
