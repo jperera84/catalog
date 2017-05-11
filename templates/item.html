@@ -1,0 +1,21 @@
+<div class="it_container">
+    <div class="item_image">
+        <img class="img_item" src="{{ url_for( 'static', filename='uploads/' + item.item_picture ) }}" alt="No Image">
+    </div>
+    <div class="item_content">
+        <h3>{{item.item_name}}</h3>
+        <p class="item_description">{{item.item_description}}</p>
+        <h5>{{item.Category.category_name}}</h5>
+    </div>
+    {% if 'username' in session %}
+        {% if session['user_id'] == item.User.user_id %}
+            <div class="item_button">
+                <a href="{{url_for('show_item_crud', category_id = item.category_id, item_id=item.item_id)}}" class="img_link"><img src="{{url_for('static', filename='ic_mode_edit_black_24dp_1x.png')}}" alt=""></a>
+                <form method="POST", action="{{url_for('del_item')}}">
+                    <input type="hidden" name="item_id" value="{{item.item_id}}">
+                    <button class="img_link button_image" type="submit"><img src="{{url_for('static', filename='ic_delete_black_24dp_1x.png')}}" alt=""></button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main %}
+ <div class="main__content">
+     <div class="categories__content">
+         <div class="categories__header">
+             <div class="group_horizontal">
+                 <a href="{{url_for('show_catalog')}}">Catalog</a>
+                 <span style="color:#757575; padding-left:8px;"><-</span>
+                 <h4>{{category.category_name}}</h4>
+             </div>
+             {%if 'username' in session %}
+                <a href="{{url_for('show_item_crud', category_id = category.category_id, item_id=0)}}" class="category__button">Post Item</a> 
+             {% endif %}
+        </div>
+        <div class="container item_container">
+            <! Items ->
+             {% for it in items %}
+                {% with item=it %}
+                    {% include "item.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+     </div>
+</div>
+
+{% endblock %}

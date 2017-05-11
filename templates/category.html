@@ -1,0 +1,8 @@
+<div class="cat_container">
+    <div class="cat_container__img">
+        <img src="static/ic_class_black_48dp_1x.png" alt="">
+    </div>
+    <div class="cat_container__name">
+        <a href="{{url_for('show_catalog_by_category', category_id = category.category_id)}}">{{ category.category_name }}</a>
+    </div>
+</div>

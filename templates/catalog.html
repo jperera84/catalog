@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block main %}
+ <div class="main__content">
+    <div class="main__content_categories">
+        <h2>Categories</h2>
+        <hr>
+        <div class="container category_container">
+            <! Categories ->
+            {% for cat in categories %}
+                {% with category=cat %}
+                    {% include "category.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="main__content_items">
+        <h2>Latest items</h2>
+        <hr>
+        <div class="container item_container">
+            <! Items ->
+             {% for it in items %}
+                {% with item=it %}
+                    {% include "item.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

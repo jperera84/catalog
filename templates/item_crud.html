@@ -1,0 +1,42 @@
+{% extends "base_crud.html" %}
+
+{% block main %}
+    <div class="main__content">
+        <div class="form_container">
+            <form method="POST" action="{{ url_for('post_item') }}" enctype = "multipart/form-data">
+                <input type="text" name="item_name" value="{{ item.item_name }}" placeholder="Item Name..." class="form_textbox">
+                <textarea rows="3" cols="1" name="item_description" placeholder="Item Description..." class="form_textbox">{{ item.item_description }}</textarea>
+                <select class="form_textbox" name="category_id">
+                    <option value="" disabled selected>Select Category</option>
+                    {% for cat in categories %}
+                        {% if cat.category_id is equalto category_id %}
+                            <option value="{{cat.category_id}}" selected>{{cat.category_name}}</option>
+                        {% else %}
+                            <option value="{{cat.category_id}}">{{cat.category_name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <label for="file" class="form__input_file">Select the item picture</label>
+                <input type="file" name="item_picture" value="" class="form__input_file" id="file">
+                <div class="form__message">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        
+                        <ul>
+                        {% for message in messages %}
+                            <li>  {{ message }}  </li>
+                        {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                    {% endwith %}
+                </div>
+                <div class="form__button_container">
+                    <input type="submit" value="Save" class="category__button">
+                    <a href="{{ url_for('show_catalog_by_category',category_id=category_id) }}" class="category__button">Cancel</a> 
+                </div>
+                <input type="hidden" name="item_id" value="{{item.item_id}}">
+            </form>
+        </div>
+    </div>
+{% endblock %}
