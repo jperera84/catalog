@@ -4,10 +4,10 @@ The project is a FLASK Web Application for the Fullstack Web Foundation Module o
 
 ## Configuration and deploy
 
-1. Create the database (Optional if use the catalog.db file provided)
+1. Create the database (Optional if use the catalog.db file provided is used)
     - run the command: ```python database_setup.py```
     This run all the database setup to create the tables in the database.
-2. Run the seed data (Optional if use the catalog.db file provided)
+2. Run the seed data (Optional if use the catalog.db file provided is used)
     - run the command: ```python database_seed.py```
     This create the Categories that will be show in the Catalog
 3. Run the application
